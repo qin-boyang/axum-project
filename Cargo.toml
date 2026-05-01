@@ -1,22 +1,22 @@
 [package]
 name = "axum-project"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-axum = "0.8.9"
-tokio = { version = "1.52.1", features = ["full"] }
-serde = { version = "1.0.228", features = ["derive"] }
-uuid = { version = "1.23.1", features = ["v4", "serde"] }
-sqlx = { version = "0.8.6", features = [ "runtime-tokio-rustls", "sqlite", "uuid" ] }
-reqwest = { version = "0.13.3", features = ["json"] }
+axum = "0.7.5"
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+uuid = { version = "1.8.0", features = ["v4", "serde"] }
+sea-orm = { version = "0.12", features = [ "sqlx-sqlite", "runtime-tokio-rustls", "macros" ] }
 
 [dev-dependencies]
-tower = { version = "0.5.3", features = ["full"] }
+tower = { version = "0.4", features = ["full"] }
 http-body-util = "0.1.2"
 serde_json = "1.0"
+reqwest = { version = "0.11", features = ["json"] }
 
 [[test]]
 name = "main_test"

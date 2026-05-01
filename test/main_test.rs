@@ -1,4 +1,4 @@
-use axum_project::User;
+use axum_project::app::Model as User;
 use serde_json::json;
 
 // The base URL of your running application.
@@ -7,7 +7,7 @@ const BASE_URL: &str = "http://127.0.0.1:3000";
 // We use a single test function to ensure the execution order.
 // This mimics a Postman collection runner.
 #[tokio::test]
-async fn e2e_tests() {
+async fn e2e_crud_test() {
     let client = reqwest::Client::new();
 
     // 1. CREATE a new user
@@ -87,7 +87,7 @@ async fn e2e_tests() {
 }
 
 #[tokio::test]
-async fn e2e_tests_with_retries() {
+async fn e2e_create_test() {
     let client = reqwest::Client::new();
 
     // 1. CREATE a new user
@@ -106,6 +106,5 @@ async fn e2e_tests_with_retries() {
         .expect("Failed to parse create response");
     assert_eq!(created_user.name, "Charlie");
     println!("Success: Created user '{}' with id {}", created_user.name, created_user.id);
-    println!("Now use your google chrome to view the data you added at http://localhost:3000/users")
+    println!("now open your google chrome to view users at http://localhost:3000/users")
 }
-
