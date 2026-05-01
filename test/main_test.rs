@@ -1,86 +1,111 @@
-use axum::{
-    body::Body,
-    http::{Request, StatusCode},
-};
-use http_body_util::BodyExt;
-use tower::ServiceExt;
-use axum_project::{app, User};
+use axum_project::User;
 use serde_json::json;
-use uuid::Uuid;
+
+// The base URL of your running application.
+const BASE_URL: &str = "http://127.0.0.1:3000";
+
+// We use a single test function to ensure the execution order.
+// This mimics a Postman collection runner.
+#[tokio::test]
+async fn e2e_tests() {
+    let client = reqwest::Client::new();
+
+    // 1. CREATE a new user
+    println!("Testing: POST /users");
+    let create_response = client
+        .post(format!("{}/users", BASE_URL))
+        .json(&json!({ "name": "Charlie" }))
+        .send()
+        .await
+        .expect("Failed to send create request");
+
+    assert_eq!(create_response.status(), 201, "Expected status CREATED");
+    let created_user = create_response
+        .json::<User>()
+        .await
+        .expect("Failed to parse create response");
+    assert_eq!(created_user.name, "Charlie");
+    println!("Success: Created user '{}' with id {}", created_user.name, created_user.id);
+
+    let user_id = created_user.id;
+
+    // 2. GET the user to verify creation
+    println!("\nTesting: GET /users/{}", user_id);
+    let get_response = client
+        .get(format!("{}/users/{}", BASE_URL, user_id))
+        .send()
+        .await
+        .expect("Failed to send get request");
+
+    assert_eq!(get_response.status(), 200, "Expected status OK");
+    let fetched_user = get_response
+        .json::<User>()
+        .await
+        .expect("Failed to parse get response");
+    assert_eq!(fetched_user.id, user_id);
+    assert_eq!(fetched_user.name, "Charlie");
+    println!("Success: Fetched user '{}'", fetched_user.name);
+
+    // 3. UPDATE the user
+    println!("\nTesting: PUT /users/{}", user_id);
+    let update_response = client
+        .put(format!("{}/users/{}", BASE_URL, user_id))
+        .json(&json!({ "name": "Charlie Brown" }))
+        .send()
+        .await
+        .expect("Failed to send update request");
+
+    assert_eq!(update_response.status(), 200, "Expected status OK");
+    let updated_user = update_response
+        .json::<User>()
+        .await
+        .expect("Failed to parse update response");
+    assert_eq!(updated_user.name, "Charlie Brown");
+    println!("Success: Updated user name to '{}'", updated_user.name);
+
+    // 4. DELETE the user
+    println!("\nTesting: DELETE /users/{}", user_id);
+    let delete_response = client
+        .delete(format!("{}/users/{}", BASE_URL, user_id))
+        .send()
+        .await
+        .expect("Failed to send delete request");
+
+    assert_eq!(delete_response.status(), 204, "Expected status NO_CONTENT");
+    println!("Success: Deleted user");
+
+    // 5. VERIFY the user is deleted
+    println!("\nTesting: GET /users/{} (should be 404)", user_id);
+    let verify_response = client
+        .get(format!("{}/users/{}", BASE_URL, user_id))
+        .send()
+        .await
+        .expect("Failed to send verify request");
+
+    assert_eq!(verify_response.status(), 404, "Expected status NOT_FOUND");
+    println!("Success: User not found, as expected");
+}
 
 #[tokio::test]
-async fn test_crud_mock() {
-    let app = app();
+async fn e2e_tests_with_retries() {
+    let client = reqwest::Client::new();
 
-    // 1. Create a user
-    let response = app
-        .clone()
-        .oneshot(
-            Request::builder()
-                .method("POST")
-                .uri("/users")
-                .header("content-type", "application/json")
-                .body(Body::from(json!({ "name": "Alice" }).to_string()))
-                .unwrap(),
-        )
+    // 1. CREATE a new user
+    println!("Testing: POST /users");
+    let create_response = client
+        .post(format!("{}/users", BASE_URL))
+        .json(&json!({ "name": "Charlie" }))
+        .send()
         .await
-        .unwrap();
+        .expect("Failed to send create request");
 
-    assert_eq!(response.status(), StatusCode::CREATED);
-    let body = response.into_body().collect().await.unwrap().to_bytes();
-    let user: User = serde_json::from_slice(&body).unwrap();
-    assert_eq!(user.name, "Alice");
-
-    let user_id = user.id;
-
-    // 2. Get the user
-    let response = app
-        .clone()
-        .oneshot(
-            Request::builder()
-                .uri(format!("/users/{}", user_id))
-                .body(Body::empty())
-                .unwrap(),
-        )
+    assert_eq!(create_response.status(), 201, "Expected status CREATED");
+    let created_user = create_response
+        .json::<User>()
         .await
-        .unwrap();
-
-    assert_eq!(response.status(), StatusCode::OK);
-    let body = response.into_body().collect().await.unwrap().to_bytes();
-    let fetched_user: User = serde_json::from_slice(&body).unwrap();
-    assert_eq!(fetched_user.id, user_id);
-    assert_eq!(fetched_user.name, "mock user");
-
-    // 3. Update the user
-    let response = app
-        .clone()
-        .oneshot(
-            Request::builder()
-                .method("PUT")
-                .uri(format!("/users/{}", user_id))
-                .header("content-type", "application/json")
-                .body(Body::from(json!({ "name": "Bob" }).to_string()))
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-
-    assert_eq!(response.status(), StatusCode::OK);
-    let body = response.into_body().collect().await.unwrap().to_bytes();
-    let updated_user: User = serde_json::from_slice(&body).unwrap();
-    assert_eq!(updated_user.name, "Bob");
-
-    // 4. Delete the user
-    let response = app
-        .oneshot(
-            Request::builder()
-                .method("DELETE")
-                .uri(format!("/users/{}", Uuid::new_v4()))
-                .body(Body::empty())
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-
-    assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        .expect("Failed to parse create response");
+    assert_eq!(created_user.name, "Charlie");
+    println!("Success: Created user '{}' with id {}", created_user.name, created_user.id);
+    println!("Now use your google chrome to view the data you added at http://localhost:3000/users")
 }
+
