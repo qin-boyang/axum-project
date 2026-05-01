@@ -47,12 +47,12 @@ async fn create_user(
         name: Set(input.name),
     };
 
-    let user = new_user
+    let created_user = new_user
         .insert(&state.conn)
         .await
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    Ok((StatusCode::CREATED, Json(user)))
+    Ok((StatusCode::CREATED, Json(created_user)))
 }
 
 // GET /users
