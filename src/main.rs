@@ -3,7 +3,7 @@ use sqlx::sqlite::SqlitePoolOptions;
 
 #[tokio::main]
 async fn main() {
-    // Create an in-memory SQLite database
+    // Create an embedded SQLite database
     let pool = SqlitePoolOptions::new()
         .max_connections(5)
         .connect("sqlite:database.db?mode=rwc")
