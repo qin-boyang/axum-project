@@ -15,7 +15,7 @@ use uuid::Uuid;
 use crate::entity::{ActiveModel, Entity, Model};
 
 #[derive(Debug, Deserialize)]
-pub struct CreateUser {
+pub struct CreateOrUpdateUser {
     pub name: String,
 }
 
@@ -40,7 +40,7 @@ pub fn app_router(conn: DatabaseConnection) -> Router {
 // POST /users
 async fn create_user(
     State(state): State<AppState>,
-    Json(input): Json<CreateUser>,
+    Json(input): Json<CreateOrUpdateUser>,
 ) -> Result<(StatusCode, Json<Model>), StatusCode> {
     let new_user = ActiveModel {
         id: Set(Uuid::new_v4()),
@@ -83,7 +83,7 @@ async fn get_user(
 async fn update_user(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
-    Json(input): Json<CreateUser>,
+    Json(input): Json<CreateOrUpdateUser>,
 ) -> Result<Json<Model>, StatusCode> {
     let user = Entity::find_by_id(id)
         .one(&state.conn)
