@@ -1,4 +1,4 @@
-use axum_project::app::Model as User;
+use axum_project::entity::Model as User;
 use serde_json::json;
 
 // The base URL of your running application.

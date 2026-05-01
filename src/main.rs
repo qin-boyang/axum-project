@@ -1,4 +1,4 @@
-use axum_project::{app, app_router}; // Use the router function, not the module
+use axum_project::{entity, app_router}; // Use the router function, not the module
 use sea_orm::{ConnectionTrait, Database, Schema};
 
 #[tokio::main]
@@ -9,7 +9,7 @@ async fn main() {
     // Set up the schema
     let backend = conn.get_database_backend();
     let schema = Schema::new(backend);
-    let create_table_stmt = schema.create_table_from_entity(app::Entity); // Now references the module correctly
+    let create_table_stmt = schema.create_table_from_entity(entity::Entity); // Now references the module correctly
     conn.execute(backend.build(&create_table_stmt)).await.unwrap();
 
     // run our app with hyper, listening globally on port 3000

@@ -1,4 +1,4 @@
-pub mod app; // Declare the app module
+pub mod entity; // Declare the app module
 
 use axum::{
     extract::{Path, State},
@@ -12,7 +12,7 @@ use serde::Deserialize;
 use uuid::Uuid;
 
 // Import the entity definitions from the new app module
-use crate::app::{ActiveModel, Entity, Model};
+use crate::entity::{ActiveModel, Entity, Model};
 
 #[derive(Debug, Deserialize)]
 pub struct CreateUser {
